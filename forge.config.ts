@@ -1,0 +1,122 @@
+import type { ForgeConfig } from '@electron-forge/shared-types';
+import { MakerSquirrel } from '@electron-forge/maker-squirrel';
+import { MakerZIP } from '@electron-forge/maker-zip';
+import { MakerDeb } from '@electron-forge/maker-deb';
+import { MakerRpm } from '@electron-forge/maker-rpm';
+import { MakerAppImage } from '@reforged/maker-appimage';
+import { VitePlugin } from '@electron-forge/plugin-vite';
+import { AutoUnpackNativesPlugin } from '@electron-forge/plugin-auto-unpack-natives';
+import { FusesPlugin } from '@electron-forge/plugin-fuses';
+import { FuseV1Options, FuseVersion } from '@electron/fuses';
+
+import 'dotenv/config';
+
+// import removeLocalesPlugin from './.plugins/remove-locales';
+// import removeVendorsPlugin from './.plugins/remove-vendors';
+
+const config: ForgeConfig = {
+  packagerConfig: {
+    asar: true,
+    // icon: process.platform === 'darwin'
+    //   ? [
+    //     './images/AppIcon.icns',
+    //     ...process.env.ARCH === 'arm64'
+    //       ? ['./images/AppIcon.icon']
+    //       : [],
+    //   ]
+    //   : './images/AppIcon',
+    appBundleId: 'dev.launchpad.app',
+    name: 'Launchpad',
+    executableName: 'launchpad',
+    extendInfo: './src/Info.plist',
+    extraResource: [
+      './public',
+    ],
+    ...process.env.OSX_SIGN_ENABLED === 'true' && {
+      osxSign: {
+        type: 'distribution',
+        identity: process.env.OSX_SIGN_IDENTITY,
+        optionsForFile: () => ({
+          entitlements: './src/entitlements.plist',
+          'hardened-runtime': true,
+        }),
+      },
+    },
+    ...process.env.OSX_NOTARIZE_ENABLED === 'true' && {
+      osxNotarize: {
+        appleId: process.env.APPLE_ID!,
+        appleIdPassword: process.env.APPLE_ID_PASSWORD!,
+        teamId: process.env.APPLE_TEAM_ID!,
+      },
+    },
+    // afterCopy: [
+    //   removeLocalesPlugin,
+    // ],
+    // afterCopyExtraResources: [
+    //   removeVendorsPlugin,
+    // ],
+  },
+  rebuildConfig: {},
+  makers: [
+    new MakerSquirrel({
+      name: 'Launchpad',
+      exe: 'launchpad.exe',
+      // setupIcon: './images/icon.ico',
+      skipUpdateIcon: true,
+    }),
+    new MakerZIP({}, ['darwin', 'win32', 'linux']),
+    new MakerRpm({
+      options: {
+        // icon: './images/icon.png',
+      },
+    }),
+    new MakerDeb({
+      options: {
+        // icon: './images/icon.png',
+      },
+    }),
+    new MakerAppImage({}),
+  ],
+  plugins: [
+    new AutoUnpackNativesPlugin({}),
+    new VitePlugin({
+      // `build` can specify multiple entry builds, which can be Main process,
+      // Preload scripts, Worker process, etc.
+      // If you are familiar with Vite configuration, it will look really
+      // familiar.
+      build: [
+        {
+          // `entry` is just an alias for `build.lib.entry` in the corresponding
+          // file of `config`.
+          entry: 'src/main/index.js',
+          config: 'vite.main.config.ts',
+          target: 'main',
+        },
+        {
+          entry: 'src/renderer/preload.js',
+          config: 'vite.preload.config.ts',
+          target: 'preload',
+        },
+      ],
+      renderer: [
+        {
+          name: 'main_window',
+          config: 'vite.renderer.config.ts',
+        },
+      ],
+    }),
+    // Fuses are used to enable/disable various Electron functionality
+    // at package time, before code signing the application
+    new FusesPlugin({
+      version: FuseVersion.V1,
+      [FuseV1Options.RunAsNode]: false,
+      [FuseV1Options.EnableCookieEncryption]: true,
+      [FuseV1Options.EnableNodeOptionsEnvironmentVariable]: false,
+      [FuseV1Options.EnableNodeCliInspectArguments]: false,
+      [FuseV1Options.EnableEmbeddedAsarIntegrityValidation]: true,
+      [FuseV1Options.OnlyLoadAppFromAsar]: true,
+    }),
+  ],
+};
+
+export default config;

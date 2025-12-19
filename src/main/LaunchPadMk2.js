@@ -2,7 +2,7 @@
 // MAPPING CORRECT DU LAUNCHPAD MK2
 // ============================================
 
-class LaunchpadMK2 {
+export default class LaunchpadMK2 {
   
   // Convertir une note MIDI en coordonnées (x, y)
   static noteToXY(note) {
@@ -128,5 +128,3 @@ class LaunchpadMK2 {
     };
   }
 }
-
-module.exports = LaunchpadMK2;
