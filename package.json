@@ -1,20 +1,44 @@
 {
   "name": "poool-launchpad",
   "version": "1.0.0",
+  "productName": "Launchpad",
+  "executableName": "Launchpad",
   "description": "An electron app to configure, map and use novation launchpad",
-  "main": "index.js",
+  "type": "module",
+  "main": ".vite/build/main.js",
   "author": "Nicolas Auger",
   "license": "MIT",
-  "devDependencies": {
-    "electron": "39.2.7",
-    "electron-rebuild": "^3.2.9"
-  },
   "scripts": {
     "start": "ELECTRON_ENABLE_LOGGING=true electron .",
+    "dev": "electron-forge start",
     "rebuild": "electron-rebuild -f -w midi",
-    "postinstall": "electron-rebuild"
+    "lint": "eslint --max-warnings=0 --cache ."
   },
   "dependencies": {
-    "@julusian/midi": "^3.6.1"
-  }
+    "@julusian/midi": "3.6.1"
+  },
+  "devDependencies": {
+    "@electron-forge/cli": "7.10.2",
+    "@electron-forge/maker-deb": "7.10.2",
+    "@electron-forge/maker-rpm": "7.10.2",
+    "@electron-forge/maker-squirrel": "7.10.2",
+    "@electron-forge/maker-zip": "7.10.2",
+    "@electron-forge/plugin-auto-unpack-natives": "7.10.2",
+    "@electron-forge/plugin-fuses": "7.10.2",
+    "@electron-forge/plugin-vite": "7.10.2",
+    "@electron/fuses": "2.0.0",
+    "@poool/eslint-config": "5.0.7",
+    "@reforged/maker-appimage": "5.1.1",
+    "@types/debug": "4.1.12",
+    "@types/electron-squirrel-startup": "1.0.2",
+    "@types/fs-extra": "11.0.4",
+    "debug": "4.4.3",
+    "dotenv": "17.2.3",
+    "electron": "39.2.6",
+    "eslint": "9.39.1",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.49.0",
+    "vite": "7.2.7"
+  },
+  "packageManager": "yarn@4.12.0"
 }

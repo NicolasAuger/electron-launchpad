@@ -1,7 +1,9 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
-const path = require('path');
-const LaunchpadController = require('./LaunchpadController.js');
-const LaunchPadMk2 = require('./LaunchPadMk2.js');
+import path from 'node:path';
+
+import { app, BrowserWindow, ipcMain, nativeTheme } from 'electron';
+
+import LaunchpadController from './LaunchpadController.js';
+import LaunchPadMk2 from './LaunchPadMk2.js';
 
 let launchpad = null;
 
@@ -17,7 +19,7 @@ const createWindow = () => {
     width: 800,
     height: 600,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      preload: path.join(app.getAppPath(), './.vite/build/preload.js'),
     },
   });
 
@@ -138,7 +140,21 @@ const createWindow = () => {
     })
   });
 
-  mainWindow.loadFile('index.html');
+  if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
+    const url = new URL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
+    url.searchParams.set('theme',
+      nativeTheme.shouldUseDarkColors ? 'dark' : 'light');
+
+    mainWindow.loadURL(url.toString());
+  } else {
+    mainWindow.loadFile(
+      path.join(app.getAppPath(),
+        `./.vite/renderer/${MAIN_WINDOW_VITE_NAME}/index.html`),
+      { query: {
+        theme: nativeTheme.shouldUseDarkColors ? 'dark' : 'light',
+      } },
+    );
+  }
 };
 
 app.whenReady().then(() => {

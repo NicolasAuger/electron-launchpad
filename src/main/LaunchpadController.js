@@ -1,7 +1,11 @@
-const midi = require('@julusian/midi');
+import { createRequire } from 'node:module';
 
-class LaunchpadController {
+const require = createRequire(import.meta.url);
+
+export default class LaunchpadController {
   constructor() {
+    const midi = require('@julusian/midi');
+
     this.input = new midi.Input();
     this.output = new midi.Output();
     this.inputPort = -1;
@@ -132,5 +136,3 @@ class LaunchpadController {
     console.log('✓ Launchpad déconnecté');
   }
 }
-
-module.exports = LaunchpadController;
