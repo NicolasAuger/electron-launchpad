@@ -6,9 +6,15 @@
   "author": "Nicolas Auger",
   "license": "MIT",
   "devDependencies": {
-    "electron": "39.2.7"
+    "electron": "39.2.7",
+    "electron-rebuild": "^3.2.9"
   },
   "scripts": {
-    "start": "ELECTRON_ENABLE_LOGGING=true electron ."
+    "start": "ELECTRON_ENABLE_LOGGING=true electron .",
+    "rebuild": "electron-rebuild -f -w midi",
+    "postinstall": "electron-rebuild"
+  },
+  "dependencies": {
+    "@julusian/midi": "^3.6.1"
   }
 }

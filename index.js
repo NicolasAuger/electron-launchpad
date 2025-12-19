@@ -1,5 +1,16 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
+const LaunchpadController = require('./LaunchpadController.js');
+const LaunchPadMk2 = require('./LaunchPadMk2.js');
+
+let launchpad = null;
+
+// Nettoyer à la fermeture
+app.on('before-quit', () => {
+  if (launchpad) {
+    launchpad.disconnect();
+  }
+});
 
 const createWindow = () => {
   const mainWindow = new BrowserWindow({
@@ -10,6 +21,12 @@ const createWindow = () => {
     },
   });
 
+  mainWindow.on('closed', () => {
+    if (launchpad) {
+      launchpad.disconnect();
+    }
+  });
+
   ipcMain.handle('openDevTools', () => {
     if (mainWindow.webContents.isDevToolsOpened()) {
       mainWindow.webContents.closeDevTools();
@@ -17,6 +34,51 @@ const createWindow = () => {
     }
 
     mainWindow.webContents.openDevTools();
+  });
+
+  ipcMain.handle('initLaunchPad', async () => {
+    try {
+      LaunchPadMk2.displayNoteGrid();
+      launchpad = new LaunchpadController();
+      launchpad.listPorts();
+      launchpad.connect();
+      
+      // Reset du Launchpad
+      launchpad.clearAll();
+      
+      // Allumer quelques LEDs de test
+      launchpad.setLED(0, 0, LaunchpadController.colors.GREEN);
+      launchpad.setLED(7, 0, LaunchpadController.colors.RED);
+      launchpad.setLED(0, 7, LaunchpadController.colors.BLUE);
+      launchpad.setLED(7, 7, LaunchpadController.colors.YELLOW);
+      
+      // Écouter les boutons
+      launchpad.onButton((button) => {
+        if (button.pressed) {
+          console.log(`Button has been pressed: Note ${button.note} (x: ${button.x}, y: ${button.y}, raw: ${button.raw})`);
+        } else {
+          console.log(`Button has been released: Note ${button.note}(x: ${button.x}, y: ${button.y}, raw: ${button.raw})`);
+        }
+        
+        if (button.pressed) {
+          // Allumer en rouge
+          launchpad.setLED(button.x, button.y, LaunchpadController.colors.YELLOW);
+          
+          // Envoyer l'événement au renderer
+          if (mainWindow) {
+            mainWindow.webContents.send('launchpad-button', button);
+          }
+        } else {
+          // Éteindre
+          launchpad.clearLED(button.x, button.y);
+        }
+      });
+      
+      return { success: true, message: 'Launchpad initialisé' };
+    } catch (error) {
+      console.error('Erreur:', error);
+      return { success: false, error: error.message };
+    }
   });
 
   let grantedDeviceThroughPermHandler;
@@ -45,13 +107,13 @@ const createWindow = () => {
         callback()
       }
     }
-  })
+  });
 
   mainWindow.webContents.session.setPermissionCheckHandler((webContents, permission, requestingOrigin, details) => {
     if (permission === 'usb' && details.securityOrigin === 'file:///') {
       return true
     }
-  })
+  });
 
   mainWindow.webContents.session.setDevicePermissionHandler((details) => {
     const { device } = details;
@@ -65,7 +127,7 @@ const createWindow = () => {
         return false
       }
     }
-  })
+  });
 
   mainWindow.webContents.session.setUSBProtectedClassesHandler((details) => {
     console.log("usb protected classes : ", details);
@@ -77,8 +139,6 @@ const createWindow = () => {
   });
 
   mainWindow.loadFile('index.html');
-
-  
 };
 
 app.whenReady().then(() => {
@@ -97,4 +157,16 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
   }
-})
+});
+
+process.on('exit', () => {
+  if (pad) {
+    pad.disconnect();
+  }
+  if (input) {
+    input.closePort();
+  }
+  if (output) {
+    output.closePort();
+  }
+});
