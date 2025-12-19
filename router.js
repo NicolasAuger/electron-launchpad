@@ -7,7 +7,12 @@ const sounds = [
     name: 'Sardoche',
     audio: 'sardoche.mp3',
     note: 11,
-  },
+  }, {
+    id: 1,
+    name: 'Vous connaissez ma femme?',
+    audio: 'vous-connaissez-ma-femme_.mp3',
+    note: 18,
+  }
 ];
 
 router
