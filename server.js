@@ -1,16 +1,17 @@
-const express = require("express");
-const router = require('./router');
+import express from 'express';
+import cors from 'cors';
+import morgan from 'morgan';
+import bodyParser from 'body-parser';
 
-const cors = require('cors');
-const morgan = require('morgan');
-const bodyParser = require("body-parser");
+import router from './router.js';
+
 const app = express();
 
 const port = process.env.PORT || 6999;
 
-app.use(morgan('combined')); 
-app.use(cors()); 
-app.use(bodyParser.json()); 
+app.use(morgan('combined'));
+app.use(cors());
+app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
   extended: true,
 }));

@@ -3,7 +3,7 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 
 export default class LaunchpadController {
-  constructor() {
+  constructor () {
     const midi = require('@julusian/midi');
 
     this.input = new midi.Input();
@@ -13,23 +13,26 @@ export default class LaunchpadController {
   }
 
   // Lister tous les ports disponibles
-  listPorts() {
+  listPorts () {
     console.log('\n=== Ports MIDI Input disponibles ===');
+
     for (let i = 0; i < this.input.getPortCount(); i++) {
       console.log(`${i}: ${this.input.getPortName(i)}`);
     }
 
     console.log('\n=== Ports MIDI Output disponibles ===');
+
     for (let i = 0; i < this.output.getPortCount(); i++) {
       console.log(`${i}: ${this.output.getPortName(i)}`);
     }
   }
 
   // Trouver et connecter le Launchpad
-  connect() {
+  connect () {
     // Chercher le Launchpad dans les ports disponibles
     for (let i = 0; i < this.input.getPortCount(); i++) {
       const name = this.input.getPortName(i);
+
       if (name.toLowerCase().includes('launchpad')) {
         this.inputPort = i;
         console.log(`✓ Launchpad Input trouvé: ${name}`);
@@ -39,6 +42,7 @@ export default class LaunchpadController {
 
     for (let i = 0; i < this.output.getPortCount(); i++) {
       const name = this.output.getPortName(i);
+
       if (name.toLowerCase().includes('launchpad')) {
         this.outputPort = i;
         console.log(`✓ Launchpad Output trouvé: ${name}`);
@@ -55,27 +59,28 @@ export default class LaunchpadController {
     this.output.openPort(this.outputPort);
 
     console.log('✓ Launchpad connecté avec succès!\n');
+
     return this;
   }
 
   // Écouter les événements du Launchpad
-  onButton(callback) {
+  onButton (callback) {
     this.input.on('message', (deltaTime, message) => {
       const [status, note, velocity] = message;
-      
+
       // 144 = Note On, 128 = Note Off
       if (status === 144 || status === 128) {
         const x = note % 16;
         const y = Math.floor(note / 16);
         const pressed = velocity > 0;
-        
+
         callback({
           x,
           y,
           note,
           pressed,
           velocity,
-          raw: message
+          raw: message,
         });
       }
     });
@@ -84,26 +89,28 @@ export default class LaunchpadController {
   }
 
   // Allumer une LED
-  setLED(x, y, color) {
+  setLED (x, y, color) {
     const note = y * 16 + x;
     this.output.sendMessage([144, note, color]);
+
     return this;
   }
 
   // Éteindre une LED
-  clearLED(x, y) {
+  clearLED (x, y) {
     return this.setLED(x, y, 0);
   }
 
   // Éteindre toutes les LEDs
-  clearAll() {
+  clearAll () {
     // Reset message pour Launchpad
     this.output.sendMessage([176, 0, 0]);
+
     return this;
   }
 
   // Couleurs prédéfinies pour Launchpad MK2
-  static get colors() {
+  static get colors () {
     return {
       OFF: 0,
       RED_LOW: 13,
@@ -121,18 +128,20 @@ export default class LaunchpadController {
       PINK: 95,
       MAGENTA: 53,
       ORANGE: 84,
-      WHITE: 3
+      WHITE: 3,
     };
   }
 
   // Fermer la connexion
-  disconnect() {
+  disconnect () {
     if (this.inputPort !== -1) {
       this.input.closePort();
     }
+
     if (this.outputPort !== -1) {
       this.output.closePort();
     }
+
     console.log('✓ Launchpad déconnecté');
   }
 }

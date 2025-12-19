@@ -33,6 +33,7 @@ const createWindow = () => {
   ipcMain.handle('openDevTools', () => {
     if (mainWindow.webContents.isDevToolsOpened()) {
       mainWindow.webContents.closeDevTools();
+
       return;
     }
 
@@ -56,10 +57,9 @@ const createWindow = () => {
       launchpad.setLED(7, 7, LaunchpadController.colors.YELLOW);
 
       console.log({ launchpad });
-      
 
       // Écouter les boutons
-      launchpad.onButton(async (button) => {
+      launchpad.onButton(async button => {
         if (button.pressed) {
           console.log(`Button has been pressed: Note ${button.note} (x: ${button.x}, y: ${button.y}, raw: ${button.raw})`);
         } else {
@@ -72,7 +72,7 @@ const createWindow = () => {
           const response = await fetch ('http://localhost:6999/sounds', {});
           const { sounds } = await response.json();
           console.log({ sounds });
-          soundToPlay = sounds.find((s) => s.note === button.note);
+          soundToPlay = sounds.find(s => s.note === button.note);
 
         } catch (error) {
           console.error('Fetch error: ', error);
@@ -88,7 +88,7 @@ const createWindow = () => {
           }
 
           if (soundToPlay) {
-            sound.play(path.join(__dirname, `./sounds/${soundToPlay.audio}`));
+            sound.play(path.join(app.getAppPath(), `./sounds/${soundToPlay.audio}`));
           }
         } else {
           // Éteindre
@@ -99,6 +99,7 @@ const createWindow = () => {
       return { success: true, message: 'Launchpad initialisé' };
     } catch (error) {
       console.error('Erreur:', error);
+
       return { success: false, error: error.message };
     }
   });
@@ -109,55 +110,58 @@ const createWindow = () => {
     // Add events to handle devices being added or removed before the callback on
     // `select-usb-device` is called.
     mainWindow.webContents.session.on('usb-device-added', (event, device) => {
-      console.log('usb-device-added FIRED WITH', device)
+      console.log('usb-device-added FIRED WITH', device);
       // Optionally update details.deviceList
-    })
+    });
 
     mainWindow.webContents.session.on('usb-device-removed', (event, device) => {
-      console.log('usb-device-removed FIRED WITH', device)
+      console.log('usb-device-removed FIRED WITH', device);
       // Optionally update details.deviceList
-    })
+    });
 
-    event.preventDefault()
+    event.preventDefault();
+
     if (details.deviceList && details.deviceList.length > 0) {
-      const deviceToReturn = details.deviceList.find((device) => {
-        return !grantedDeviceThroughPermHandler || (device.deviceId !== grantedDeviceThroughPermHandler.deviceId)
-      })
+      const deviceToReturn = details.deviceList.find(device => {
+        return !grantedDeviceThroughPermHandler || (device.deviceId !== grantedDeviceThroughPermHandler.deviceId);
+      });
+
       if (deviceToReturn) {
-        callback(deviceToReturn.deviceId)
+        callback(deviceToReturn.deviceId);
       } else {
-        callback()
+        callback();
       }
     }
   });
 
   mainWindow.webContents.session.setPermissionCheckHandler((webContents, permission, requestingOrigin, details) => {
     if (permission === 'usb' && details.securityOrigin === 'file:///') {
-      return true
+      return true;
     }
   });
 
-  mainWindow.webContents.session.setDevicePermissionHandler((details) => {
+  mainWindow.webContents.session.setDevicePermissionHandler(details => {
     const { device } = details;
-    console.log("usb device permission request for device: ", device);
-    
+    console.log('usb device permission request for device: ', device);
+
     if (details.deviceType === 'usb' && details.origin === 'file://') {
       if (!grantedDeviceThroughPermHandler) {
-        grantedDeviceThroughPermHandler = details.device
-        return true
+        grantedDeviceThroughPermHandler = details.device;
+
+        return true;
       } else {
-        return false
+        return false;
       }
     }
   });
 
-  mainWindow.webContents.session.setUSBProtectedClassesHandler((details) => {
-    console.log("usb protected classes : ", details);
-    
-    return details.protectedClasses.filter((usbClass) => {
+  mainWindow.webContents.session.setUSBProtectedClassesHandler(details => {
+    console.log('usb protected classes : ', details);
+
+    return details.protectedClasses.filter(usbClass => {
       // Exclude classes except for audio classes
-      return usbClass.indexOf('audio') === -1
-    })
+      return usbClass.indexOf('audio') === -1;
+    });
   });
 
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
@@ -198,11 +202,5 @@ app.on('window-all-closed', () => {
 process.on('exit', () => {
   if (launchpad) {
     launchpad.disconnect();
-  }
-  if (input) {
-    input.closePort();
-  }
-  if (output) {
-    output.closePort();
   }
 });
