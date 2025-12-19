@@ -7,14 +7,21 @@
   "license": "MIT",
   "devDependencies": {
     "electron": "39.2.7",
-    "electron-rebuild": "^3.2.9"
+    "electron-rebuild": "3.2.9",
+    "nodemon": "^3.1.11"
   },
   "scripts": {
     "start": "ELECTRON_ENABLE_LOGGING=true electron .",
-    "rebuild": "electron-rebuild -f -w midi",
-    "postinstall": "electron-rebuild"
+    "rebuild": "electron-rebuild",
+    "postinstall": "electron-rebuild",
+    "serve": "nodemon server.js"
   },
   "dependencies": {
-    "@julusian/midi": "^3.6.1"
+    "@julusian/midi": "3.6.1",
+    "body-parser": "2.2.1",
+    "cors": "2.8.5",
+    "express": "5.2.1",
+    "morgan": "1.10.1",
+    "sound-play": "1.1.0"
   }
 }
