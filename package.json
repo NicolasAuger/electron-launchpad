@@ -8,7 +8,7 @@
   "devDependencies": {
     "electron": "39.2.7",
     "electron-rebuild": "3.2.9",
-    "nodemon": "^3.1.11"
+    "nodemon": "3.1.11"
   },
   "scripts": {
     "start": "ELECTRON_ENABLE_LOGGING=true electron .",

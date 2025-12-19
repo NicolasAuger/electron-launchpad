@@ -180,8 +180,8 @@ app.on('window-all-closed', () => {
 });
 
 process.on('exit', () => {
-  if (pad) {
-    pad.disconnect();
+  if (launchpad) {
+    launchpad.disconnect();
   }
   if (input) {
     input.closePort();
