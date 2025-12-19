@@ -1,6 +1,7 @@
 import path from 'node:path';
 
 import { app, BrowserWindow, ipcMain, nativeTheme } from 'electron';
+import sound from 'sound-play';
 
 import LaunchpadController from './LaunchpadController.js';
 import LaunchPadMk2 from './LaunchPadMk2.js';
@@ -44,38 +45,57 @@ const createWindow = () => {
       launchpad = new LaunchpadController();
       launchpad.listPorts();
       launchpad.connect();
-      
+
       // Reset du Launchpad
       launchpad.clearAll();
-      
+
       // Allumer quelques LEDs de test
       launchpad.setLED(0, 0, LaunchpadController.colors.GREEN);
       launchpad.setLED(7, 0, LaunchpadController.colors.RED);
       launchpad.setLED(0, 7, LaunchpadController.colors.BLUE);
       launchpad.setLED(7, 7, LaunchpadController.colors.YELLOW);
+
+      console.log({ launchpad });
       
+
       // Écouter les boutons
-      launchpad.onButton((button) => {
+      launchpad.onButton(async (button) => {
         if (button.pressed) {
           console.log(`Button has been pressed: Note ${button.note} (x: ${button.x}, y: ${button.y}, raw: ${button.raw})`);
         } else {
           console.log(`Button has been released: Note ${button.note}(x: ${button.x}, y: ${button.y}, raw: ${button.raw})`);
         }
-        
+
+        let soundToPlay;
+
+        try {
+          const response = await fetch ('http://localhost:6999/sounds', {});
+          const { sounds } = await response.json();
+          console.log({ sounds });
+          soundToPlay = sounds.find((s) => s.note === button.note);
+
+        } catch (error) {
+          console.error('Fetch error: ', error);
+        }
+
         if (button.pressed) {
           // Allumer en rouge
           launchpad.setLED(button.x, button.y, LaunchpadController.colors.YELLOW);
-          
+
           // Envoyer l'événement au renderer
           if (mainWindow) {
             mainWindow.webContents.send('launchpad-button', button);
+          }
+
+          if (soundToPlay) {
+            sound.play(path.join(__dirname, `./sounds/${soundToPlay.audio}`));
           }
         } else {
           // Éteindre
           launchpad.clearLED(button.x, button.y);
         }
       });
-      
+
       return { success: true, message: 'Launchpad initialisé' };
     } catch (error) {
       console.error('Erreur:', error);

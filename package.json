@@ -12,10 +12,16 @@
     "start": "ELECTRON_ENABLE_LOGGING=true electron .",
     "dev": "electron-forge start",
     "rebuild": "electron-rebuild -f -w midi",
-    "lint": "eslint --max-warnings=0 --cache ."
+    "lint": "eslint --max-warnings=0 --cache .",
+    "serve": "nodemon server.js"
   },
   "dependencies": {
-    "@julusian/midi": "3.6.1"
+    "@julusian/midi": "3.6.1",
+    "body-parser": "2.2.1",
+    "cors": "2.8.5",
+    "express": "5.2.1",
+    "morgan": "1.10.1",
+    "sound-play": "1.1.0"
   },
   "devDependencies": {
     "@electron-forge/cli": "7.10.2",
@@ -32,10 +38,12 @@
     "@types/debug": "4.1.12",
     "@types/electron-squirrel-startup": "1.0.2",
     "@types/fs-extra": "11.0.4",
+    "@types/sound-play": "1.1.3",
     "debug": "4.4.3",
     "dotenv": "17.2.3",
     "electron": "39.2.6",
     "eslint": "9.39.1",
+    "nodemon": "3.1.11",
     "typescript": "5.9.3",
     "typescript-eslint": "8.49.0",
     "vite": "7.2.7"

@@ -3,19 +3,23 @@ consoleButton.onclick = async () => await window.pooolLaunchpadApp
   .openDevTools()
 
 const initButton = document.getElementById('init-launchpad');
-initButton.onclick = async () => await window.pooolLaunchpadApp
-  .initLaunchPad()
-
-// Écouter les boutons
-window.launchpad.onButton((button) => {
-  console.log('Bouton reçu dans le renderer:', button);
-  
-  // Jouer un son, etc.
-  if (button.pressed) {
-    playSound(button.x, button.y);
-  }
-});
-
+initButton.onclick = async () => {
+  await window.pooolLaunchpadApp.initLaunchPad()
+  .then((result) => {
+    // Écouter les boutons
+    window.launchpad.onButton((button) => {
+      console.log('Bouton reçu dans le renderer:', button);
+      
+      // Jouer un son, etc.
+      if (button.pressed) {
+        playSound(button.x, button.y);
+      }
+    });
+  })
+  .catch((error) => {
+    console.error('Erreur lors de l\'initialisation du Launchpad:', error);
+  });
+};
 
 function getDeviceDetails (device) {
   return device.productName || `Unknown device ${device.deviceId}`
