@@ -1,0 +1,14 @@
+{
+  "name": "poool-launchpad",
+  "version": "1.0.0",
+  "description": "An electron app to configure, map and use novation launchpad",
+  "main": "index.js",
+  "author": "Nicolas Auger",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "39.2.7"
+  },
+  "scripts": {
+    "start": "ELECTRON_ENABLE_LOGGING=true electron ."
+  }
+}
